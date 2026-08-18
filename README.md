@@ -11,6 +11,52 @@ Claude Code plugin: a design-only, permission-separated multi-agent development 
 - **自動でファイルを上書き・merge・commitする機能は持たない。** 実装権限を持つのは常にImplementation Owner（導入先プロジェクトのユーザー自身が操作するClaude Codeセッション）のみで、他のロールはすべてread-only
 - 実際の設計判断・commit・push・PR・mergeは、常にユーザーの明示指示に基づいて行われる。このプラグイン自体が判断を代行することはない
 
+## 他AIへの技術ブリーフィング
+
+このセクションだけを読めば、他のAI（別セッション・別ツールのAI）にこのリポジトリの仕組みを一通り説明できるよう、要点を集約している。各項目の完全版は末尾のリンク先を参照。
+
+### 役割（論理ロール）と実行主体
+
+| 論理ロール | 実行主体 | model alias | 権限 |
+|---|---|---|---|
+| Requirements Auditor | `agents/requirements-auditor.md` | haiku | read-only |
+| Simplifier | `agents/simplifier.md` | haiku | read-only |
+| Main/Primary Architect | `agents/claude-architect.md` | sonnet | read-only（設計案作成のみ、実装しない） |
+| Independent Architect | Codex（`.mcp.json`の`codex-reviewer`経由） | - | read-only |
+| Design Judge / Integrator | `agents/design-judge.md` | opus | read-only（匿名評価と統合設計の作成のみ） |
+| Implementation Owner | 親のClaude Codeセッション自身 | - | **編集権限を持つのはこのロールのみ** |
+
+Alternative Architect・Red Team Reviewer・Final Auditorは、重大な対立時やユーザー指定時のみ追加される任意ロール。full model IDはどこにもハードコードしない（aliasのみ使用）。
+
+### フェーズの流れ（`docs/agent-workflow/review-protocol.md`）
+
+1. **タスク入力の明示化** — 目的・背景・対象範囲・対象外・変更可能/禁止ファイル・制約・受入条件・検証コマンド・実装可否・commit/push/PR可否。不足項目は勝手に補完せず`Unknown`として報告する
+2. **独立提案** — Main ArchitectとIndependent Architectが、互いの案を見ずにそれぞれ設計案を作成する
+3. **Round 1**（相互批評・Red Teamレビュー・反論と修正版）
+4. **Round 2**（**条件付き** — 重大な未解決事項があり、新しい証拠か具体的な反証がある場合のみ。同じ主張の繰り返しは禁止）
+5. **匿名評価** — モデル名を伏せて「案1」「案2」として、正確性30/根拠の強さ20/安全性と変更範囲の遵守20/単純さ・保守性15/テスト可能性・ロールバック性15の100点満点でDesign Judgeが評価する
+6. **統合設計** — Design Judgeが採用案・不採用理由・対象ファイル・変更順序・テスト計画・ロールバック方法・ユーザー承認が必要な事項をまとめる
+7. **ユーザー承認** → **実装**（Implementation Ownerのみ、承認済みの統合設計から逸脱しない）
+
+証拠は常に **Confirmed / Inference / Unknown** で分類する。実行していないテストを「成功」と書くことは禁止。
+
+opt-inの**Outcome Improvement Cycle**（`skills/outcome-improvement-cycle/SKILL.md`）は、外部Evidence（実際の勝率測定等）を`tools/outcome_gatekeeper.py`（決定論的・read-only・標準ライブラリのみ）で評価する、上記フローの拡張。App Profile契約は`docs/agent-workflow/app-profile.md`を参照。
+
+### 進捗・提案の可視化（`docs/agent-workflow/cycle-log-schema.md`）
+
+親セッションが、各フェーズの完了時に追記専用JSONLへ1行ずつ記録する（`task_input_recorded` / `proposal_submitted` / `round1_critique` / `round2_critique` / `anonymous_evaluation` / `integrated_design` / `implementation_gate`）。エージェント自身はログに書き込まない。`python tools/render_dashboard.py <log>.jsonl`でHTMLダッシュボードを生成できる（ログは一切書き換えない読み取り専用）。
+
+### 安全境界（`docs/agent-workflow/git-safety.md`）
+
+- 実装権限はImplementation Ownerのみ。他ロールは`Read`/`Glob`/`Grep`のみで、ファイル変更・commit・push・PR・mergeは一切できない
+- 自動commit・auto-mergeを行わない。push/PR/mergeは常にユーザーの明示指示が必要
+- `git add .`を使わない、未コミット変更を破棄しない、入れ子のGitリポジトリを作らない
+- このプラグイン自体（`tools/`配下）も、書き込み・subprocess・ネットワークアクセスを行わない読み取り専用ツールのみで構成されている
+
+### 詳細を読む場合
+
+`docs/agent-workflow/README.md`が全文書への入口。特に`review-protocol.md`（レビュー手順）、`subagents.md`（4エージェントの定義方法）、`multi-agent-design-skill.md`（Skillのオーケストレーション手順）、`mcp-connection.md`（Codex接続）、`troubleshooting.md`を参照。
+
 ## インストール
 
 ```text
