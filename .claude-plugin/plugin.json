@@ -1,0 +1,19 @@
+{
+  "name": "multi-agent-workflow",
+  "displayName": "Multi-agent Workflow",
+  "description": "Design-only multi-agent review workflow (Claude as Implementation Owner, Codex as Independent Architect) plus an opt-in Outcome Improvement Cycle, packaged for reuse across projects. Includes a cycle-log schema and an HTML dashboard renderer for progress and proposal visibility.",
+  "version": "0.1.0",
+  "author": {
+    "name": "hattorishotap65-blip"
+  },
+  "homepage": "https://github.com/hattorishotap65-blip/multi-agent-workflow",
+  "repository": "https://github.com/hattorishotap65-blip/multi-agent-workflow",
+  "license": "MIT",
+  "keywords": [
+    "multi-agent",
+    "code-review",
+    "design-review",
+    "codex",
+    "workflow"
+  ]
+}
