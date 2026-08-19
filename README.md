@@ -30,7 +30,7 @@ Alternative Architect・Red Team Reviewer・Final Auditorは、重大な対立�
 
 ### フェーズの流れ（`docs/agent-workflow/review-protocol.md`）
 
-1. **タスク入力の明示化** — 目的・背景・対象範囲・対象外・変更可能/禁止ファイル・制約・受入条件・検証コマンド・実装可否・commit/push/PR可否。不足項目は勝手に補完せず`Unknown`として報告する
+1. **タスク入力の明示化** — 目的・KPI（成功指標）・背景・対象範囲・対象外・変更可能/禁止ファイル・制約・受入条件・検証コマンド・実装可否・commit/push/PR可否。不足項目は勝手に補完せず`Unknown`として報告する。KPIは目的文からの推測では埋めない
 2. **独立提案** — Main ArchitectとIndependent Architectが、互いの案を見ずにそれぞれ設計案を作成する
 3. **Round 1**（相互批評・Red Teamレビュー・反論と修正版）
 4. **Round 2**（**条件付き** — 重大な未解決事項があり、新しい証拠か具体的な反証がある場合のみ。同じ主張の繰り返しは禁止）
