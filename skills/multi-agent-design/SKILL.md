@@ -61,9 +61,10 @@ Invoke the `requirements-auditor` subagent explicitly via the Agent tool. Pass i
 
 - `$ARGUMENTS`
 - The current working directory
-- That this is design-only, read-only work
-- That implementation, commit, push, and PR are not authorized at this stage
+- That this is design-only, read-only work: implementation and commit/push/PR are unauthorized for this Skill's entire execution (per "Absolute boundaries" above) — per `docs/agent-workflow/review-protocol.md`'s "毎回のタスク入力で省略できる項目", the auditor records 実装の可否 and commit/push/PRの可否 as Confirmed: No rather than treating them as missing, and checks the project's own rule document for 変更禁止ファイル and 検証コマンド before falling back to Unknown
 - `docs/agent-workflow/review-protocol.md`'s task input format, for it to audit against
+
+This means callers of this Skill only need to state the task-specific fields — 目的・背景・対象範囲・対象外・変更可能ファイル・制約・受入条件 — in `$ARGUMENTS`; the other 4 fields are resolved by the auditor as described above.
 
 If `requirements-auditor` returns **BLOCKED**:
 
