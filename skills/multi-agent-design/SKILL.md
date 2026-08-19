@@ -12,7 +12,20 @@ This Skill orchestrates the project's read-only multi-agent design workflow (`do
 
 **Design task**: $ARGUMENTS
 
-If `$ARGUMENTS` is empty, do not start any phase. Ask the user to provide the design task, then stop.
+If `$ARGUMENTS` is empty, do not start any phase. Present the following template of task-specific input fields (per `docs/agent-workflow/review-protocol.md`'s task input format) for the user to fill in, then stop:
+
+```
+目的:
+KPI（成功指標。指標名・方向・しきい値・測定方法。目的文からの推測ではなく明示すること）:
+背景:
+対象範囲:
+対象外:
+変更可能ファイル:
+制約:
+受入条件:
+```
+
+Note in the same message that 実装の可否・commit/push/PRの可否・変更禁止ファイル・検証コマンド are resolved automatically in Phase 1 and do not need to be filled in here. Do not fill in any field of the template yourself, and do not proceed to Phase 0 until the user supplies it.
 
 ## Absolute boundaries
 
@@ -64,7 +77,7 @@ Invoke the `requirements-auditor` subagent explicitly via the Agent tool. Pass i
 - That this is design-only, read-only work: implementation and commit/push/PR are unauthorized for this Skill's entire execution (per "Absolute boundaries" above) — per `docs/agent-workflow/review-protocol.md`'s "毎回のタスク入力で省略できる項目", the auditor records 実装の可否 and commit/push/PRの可否 as Confirmed: No rather than treating them as missing, and checks the project's own rule document for 変更禁止ファイル and 検証コマンド before falling back to Unknown
 - `docs/agent-workflow/review-protocol.md`'s task input format, for it to audit against
 
-This means callers of this Skill only need to state the task-specific fields — 目的・背景・対象範囲・対象外・変更可能ファイル・制約・受入条件 — in `$ARGUMENTS`; the other 4 fields are resolved by the auditor as described above.
+This means callers of this Skill only need to state the task-specific fields — 目的・KPI・背景・対象範囲・対象外・変更可能ファイル・制約・受入条件 — in `$ARGUMENTS`; the other 4 fields are resolved by the auditor as described above.
 
 If `requirements-auditor` returns **BLOCKED**:
 
