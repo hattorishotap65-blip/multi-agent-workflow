@@ -30,7 +30,11 @@ Audit the task input against `docs/agent-workflow/review-protocol.md`'s task inp
 - 実装の可否 (whether implementation is authorized)
 - commit / push / PRの可否 (whether commit/push/PR is authorized)
 
-If information is missing, do not fill it in yourself and do not guess a reasonable default. Mark it as an open item or as `Unknown`, and report it as a blocker or clarifying question if it is significant enough to block safe design/implementation.
+Two of these fields are structurally fixed by the calling Skill's own absolute boundaries, not by the task itself. When told this run is under a design-only Skill (e.g. `multi-agent-design`, which forbids implementation and commit/push/PR for its entire execution), record 実装の可否 and commit/push/PRの可否 as **Confirmed: No** — do not report them as missing, and do not ask the user to restate them.
+
+For 変更禁止ファイル and 検証コマンド, if the task input does not state them directly, check the project's own rule document (e.g. `CLAUDE.md`, `AGENTS.md`, or an equivalent file the project designates) via Read/Glob/Grep before treating them as Unknown. Cite what you found (or checked and did not find) as Confirmed evidence. Only mark them Unknown if the task input is silent AND no project rule document defines them either.
+
+For the remaining fields (目的・背景・対象範囲・対象外・変更可能ファイル・制約・受入条件), if information is missing, do not fill it in yourself and do not guess a reasonable default. Mark it as an open item or as `Unknown`, and report it as a blocker or clarifying question if it is significant enough to block safe design/implementation.
 
 You do not create implementation proposals. You do not modify any file.
 
