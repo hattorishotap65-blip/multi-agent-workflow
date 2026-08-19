@@ -176,11 +176,11 @@ class SampleProfileTests(unittest.TestCase):
         }
         self.assertEqual(directions, {"maximize", "minimize", "target", "threshold", "range"})
 
-    def test_pokemon_profile_includes_megastarmie_segment(self):
+    def test_pokemon_profile_includes_opponent_c_segment(self):
         profile = load_json(POKEMON_PROFILE)
-        self.assertIn("opponent-megastarmie", {segment["id"] for segment in profile["segments"]})
+        self.assertIn("opponent-c", {segment["id"] for segment in profile["segments"]})
         primary = next(metric for metric in profile["metrics"] if metric["role"] == "primary")
-        self.assertIn("opponent-megastarmie", primary["required_segments"])
+        self.assertIn("opponent-c", primary["required_segments"])
 
 
 class ProfileValidationTests(unittest.TestCase):
@@ -261,7 +261,7 @@ class ProfileValidationTests(unittest.TestCase):
     def test_allowed_and_prohibited_paths_may_not_overlap(self):
         self.assert_invalid(
             lambda p: p["change_scope"]["prohibited_paths"].append(
-                "experiments/agents/raging_bolt/main.py"
+                "experiments/agents/agent-a/main.py"
             ),
             "CHANGE_SCOPE_PATH_CONFLICT",
         )
@@ -275,7 +275,7 @@ class ProfileValidationTests(unittest.TestCase):
         )
         self.assert_invalid(
             lambda p: p["change_scope"]["prohibited_paths"].append(
-                "EXPERIMENTS/AGENTS/RAGING_BOLT/MAIN.PY"
+                "EXPERIMENTS/AGENTS/AGENT-A/MAIN.PY"
             ),
             "CHANGE_SCOPE_PATH_CONFLICT",
         )
@@ -364,7 +364,7 @@ class DeterministicEvaluationTests(unittest.TestCase):
         self.assertEqual(gate.evaluate(profile, screening)["verdict"], "FAIL")
 
     def test_catastrophic_segment_regression_fails_without_fallback(self):
-        set_candidate(self.screening, "external_league_win_rate", "0.2", segment_id="opponent-lucario")
+        set_candidate(self.screening, "external_league_win_rate", "0.2", segment_id="opponent-a")
         result = gate.evaluate(self.profile, self.screening)
         self.assertEqual(result["verdict"], "FAIL")
         self.assertFalse(result["fallback_allowed"])
@@ -401,7 +401,7 @@ class DeterministicEvaluationTests(unittest.TestCase):
 
     def test_extra_metric_segment_cell_is_blocked(self):
         extra = copy.deepcopy(cell(self.screening, "error_rate", "overall"))
-        extra["segment_id"] = "opponent-lucario"
+        extra["segment_id"] = "opponent-a"
         self.screening["cells"].append(extra)
         result = gate.evaluate(self.profile, self.screening)
         self.assertEqual(result["verdict"], "BLOCKED")
@@ -493,7 +493,7 @@ class DeterministicEvaluationTests(unittest.TestCase):
             primary_catastrophic_failure,
             "external_league_win_rate",
             "0.2",
-            segment_id="opponent-lucario",
+            segment_id="opponent-a",
         )
         fallback_screening = make_evidence(self.profile, "screening", role="fallback")
         result = gate.evaluate(
